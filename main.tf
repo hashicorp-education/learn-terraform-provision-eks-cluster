@@ -3,6 +3,7 @@
 
 provider "aws" {
   region = var.region
+  profile = var.aws_profile
 }
 
 # Filter out local zones, which are not currently supported 
@@ -53,7 +54,7 @@ module "eks" {
   version = "20.8.5"
 
   cluster_name    = local.cluster_name
-  cluster_version = "1.29"
+  cluster_version = "1.32"
 
   cluster_endpoint_public_access           = true
   enable_cluster_creator_admin_permissions = true
@@ -110,4 +111,11 @@ module "irsa-ebs-csi" {
   provider_url                  = module.eks.oidc_provider
   role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn]
   oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
+}
+
+resource "aws_eks_access_entry" "example" {
+  cluster_name      = local.cluster_name
+  principal_arn     = var.principal_arn
+  kubernetes_groups = []
+  type              = "STANDARD"
 }
